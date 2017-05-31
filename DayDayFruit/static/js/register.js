@@ -7,6 +7,17 @@ $(function(){
 	var error_check = false;
 
 
+	$('#allow').click(function(){
+			if($(this).prop('checked') == false){
+				$('#submit').prop('disabled', 'disabled');
+				$('#submit').css('backgroundColor','#666');
+			}
+			else{
+				$('#submit').removeAttr('disabled')
+				$('#submit').css('backgroundColor','#47aa34');
+			}
+	});
+
 	$('#user_name').blur(function() {
 		check_user_name();
 	});
@@ -48,10 +59,21 @@ $(function(){
 		}
 		else
 		{
-			$('#user_name').next().hide();
-			error_name = false;
+			$.get('/user_exit/?user_name='+$('#user_name').val(), function(data){
+				if(data.count == 1)
+				{
+					$('#user_name').next().html('用户名已经存在,请重新输入！').show();
+					error_name = true;
+				}
+				else
+				{
+					$('#user_name').next().hide();
+					error_name = false;
+				}
+			})
+			
 		}
-	}
+	};
 
 	function check_pwd(){
 		var len = $('#pwd').val().length;
@@ -83,7 +105,7 @@ $(function(){
 		{
 			$('#cpwd').next().hide();
 			error_check_password = false;
-		}		
+		}	
 		
 	}
 
@@ -103,7 +125,6 @@ $(function(){
 		}
 
 	}
-
 
 	$('#reg_form').submit(function() {
 		check_user_name();
