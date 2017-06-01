@@ -4,21 +4,32 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
 	{% block title%}
-		这是title
+		<!-- 这是title -->
 	{% endblock title%}
 	<script type="text/javascript" src="/static/js/jquery-1.12.4.min.js"></script>
 	<link rel="stylesheet" type="text/css" href="/static/css/reset.css">
 	<link rel="stylesheet" type="text/css" href="/static/css/main.css">
 	{% block js%}
-
+    <!-- 引入外部js -->
 	{% endblock js%}
 </head>
 <body>
-	
-	{% block content%}
-		这是内容
-	{% endblock content%}
+	{% block head%}
+		<!-- 这里显示导航条 -->
+	{% endblock head%}
 
+	{% block search%}
+		<!-- 这里显示搜索框 -->
+	{% endblock search%}
+
+	{% block silder%}
+		<!-- 这里显示侧边栏 -->
+			{% block content%}
+		<!-- 这是内容 -->
+		{% endblock content%}
+	{% endblock silder%}
+
+	{% block footer %}
 	<div class="footer no-mp">
 		<div class="foot_link">
 			<a href="#">关于我们</a>
@@ -32,6 +43,6 @@
 		<p>CopyRight © 2016 北京天天生鲜信息技术有限公司 All Rights Reserved</p>
 		<p>电话：010-****888    京ICP备*******8号</p>
 	</div>
-	
+	{% endblock footer %}
 </body>
 </html>

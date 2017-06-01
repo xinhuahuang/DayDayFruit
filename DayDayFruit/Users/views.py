@@ -2,22 +2,36 @@
 
 from django.shortcuts import render, redirect
 from models import *
-from django.http import JsonResponse
-
+from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
+from . import user_decorator
 
 
 def index(request):
-    return render(request, 'Users/index.html')
+    cookie_uname = ''
+    session_uname = request.session.get('user_name', '')
+
+    if request.COOKIES.has_key('uname'):
+        cookie_uname = request.COOKIES['uname']
+
+    context = {'cookie_uname':cookie_uname, 'session_uname':session_uname}
+    return render(request, 'Users/index.html', context)
+    #return HttpResponse('test hello')
 
 
 def login(request):
     context = {'uname_err_code':0, 'pwd_err_code':0}
     return render(request, 'Users/login.html', context)
 
+# 注销用户
+def logout(request):
+    request.session.flush()
+    return redirect('/user/login/')
+
 def login_handle(request):
     from hashlib import sha1
     flage = True
     context = {}
+    user = None
 
     if request.method == 'POST':
         dict = request.POST
@@ -27,6 +41,7 @@ def login_handle(request):
         sha1 = sha1()
         sha1.update(pwd)
         pwd = sha1.hexdigest()
+        rember_me = dict.get('rember_me', 0)
 
         # 检查用户名输入是否正确
         uname_err_code = check_user_for_login(user_name)
@@ -56,7 +71,20 @@ def login_handle(request):
 
         # 如果登陆成功跳转到首页，　否则返回错误信息
         if flage:
-            return redirect('/')
+            url = request.COOKIES.get('url', '/user/')
+            red = HttpResponseRedirect(url)
+            # 成功后删除转向地址，防止以后直接登录造成的转向
+            red.set_cookie('url','',max_age=-1)
+
+            if rember_me:
+                red.set_cookie('uname', user_name)
+            else:
+                red.set_cookie('uname', '', max_age=-1)
+
+            request.session['user_id'] = user[0].id
+            request.session['user_name'] = user_name
+            return red
+            #return redirect('/user/')
         else:
             return render(request, 'Users/login.html', context)
 
@@ -149,3 +177,64 @@ def check_user_for_login(user_name):
         return 3   # 用户不存在
     else:
         return 0
+
+
+@user_decorator.login
+def user_center_info(request):
+    uname = ''
+    phone = ''
+    address = ''
+
+    uid = request.session.get('user_id', 0)
+    if uid:
+        user = Users.objects.filter(id=uid)
+        if user.count:
+            uname = user[0].uname
+            phone = user[0].phone
+            address = user[0].address
+    context = {'uname':uname, 'phone':phone, 'address':address}
+    return render(request, 'Users/user_center_info.html', context)
+
+
+@user_decorator.login
+def user_center_site(request):
+    contact = ''
+    phone = ''
+    address = ''
+    postcode = ''
+
+    uid = request.session.get('user_id', 0)
+    if uid:
+        user = Users.objects.filter(id=uid)
+        if user.count:
+            phone = user[0].phone
+            address = user[0].address
+            contact = user[0].contact
+            postcode = user[0].postcode
+    context = {'contact':contact, 'phone':phone, 'address':address, 'postcode':postcode}
+    return render(request, 'Users/user_center_site.html', context)
+
+@user_decorator.login
+def user_center_site_handle(request):
+    uid = request.session.get('user_id', 0)
+    contact = ''
+    phone = ''
+    address = ''
+    postcode = ''
+
+    if request.method == 'POST':
+        contact = request.POST.get('contact','')
+        address = request.POST.get('address','')
+        postcode = request.POST.get('postcode','')
+        phone = request.POST.get('phone','')
+
+        if uid:
+            user = Users.objects.get(id=uid)
+            user.contact = contact
+            user.address = address
+            user.postcode = postcode
+            user.phone = phone
+            user.save()
+
+    context = {'contact':contact, 'phone':phone, 'address':address, 'postcode':postcode}
+    return render(request, 'Users/user_center_site.html', context)

@@ -1,0 +1,93 @@
+{% extends 'base_foot.html' %}
+
+{% block title%}
+	<title>天天生鲜-用户中心</title>
+{% endblock title%}
+
+{% block js%}
+  <script type="text/javascript">
+  	$(function(){
+  		current_path = window.location.pathname;
+
+  		$('.left_menu_con a').each(function(){
+  			$(this).removeAttr('class');  		
+  		});
+
+  		if(current_path == '/user/user_center_site/')
+  		{
+  			$('.left_menu_con a').eq(2).prop('class','active');
+  		}
+  		else if(current_path == '/user/user_center_info/')
+  		{
+  			$('.left_menu_con a').eq(0).prop('class','active');
+  		}
+  		else if(current_path == '/user/user_center_site_handle/')
+  		{
+  			$('.left_menu_con a').eq(2).prop('class','active');
+  		}
+  		else
+  		{
+  			$('.left_menu_con a').eq(1).prop('class','active');
+  		}
+  	})
+  </script>
+{% endblock js%}
+
+{% block head%}
+	<div class="header_con">
+		<div class="header">
+			<div class="welcome fl">欢迎来到天天生鲜!</div>
+			<div class="fr">
+			{%if request.session.user_name|default:'' != ''%}
+				<div class="login_btn fl">
+					欢迎您：<em>{{request.session.user_name}}</em>
+					<span>|</span>
+					<a href="/user/logout">退出</a>
+				</div>
+			{%else%}
+				<div class="login_btn fl">
+					<a href="login.html">登录</a>
+					<span>|</span>
+					<a href="register.html">注册</a>
+				</div>
+			{%endif%}
+				<div class="user_link fl">
+					<span>|</span>
+					<a href="/user/user_center_info/">用户中心</a>
+					<span>|</span>
+					<a href="cart.html">我的购物车</a>
+					<span>|</span>
+					<a href="user_center_order.html">我的订单</a>
+				</div>
+			</div>
+		</div>		
+	</div>
+{% endblock head%}
+
+{% block search%}
+	<div class="search_bar clearfix">
+		<a href="index.html" class="logo fl"><img src="/static/images/logo.png"></a>
+		<div class="sub_page_name fl">|&nbsp;&nbsp;&nbsp;&nbsp;用户中心</div>
+		<div class="search_con fr">
+			<input type="text" class="input_text fl" name="" placeholder="搜索商品">
+			<input type="button" class="input_btn fr" name="" value="搜索">
+		</div>		
+	</div>
+{% endblock search%}
+
+{% block silder%}
+<div class="main_con clearfix">
+			<div class="left_menu_con clearfix">
+				<h3>用户中心</h3>
+				<ul>
+					<li><a href="/user/user_center_info/" class="active">· 个人信息</a></li>
+					<li><a href="user_center_order.html">· 全部订单</a></li>
+					<li><a href="/user/user_center_site/">· 收货地址</a></li>
+				</ul>
+			</div>
+
+			{% block content %}
+
+			{% endblock content%}
+</div>
+{% endblock silder%}
