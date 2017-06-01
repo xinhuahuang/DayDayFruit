@@ -59,7 +59,7 @@ $(function(){
 		}
 		else
 		{
-			$.get('/user_exit/?user_name='+$('#user_name').val(), function(data){
+			$.get('/user/user_exit/?user_name='+$('#user_name').val(), function(data){
 				if(data.count == 1)
 				{
 					$('#user_name').next().html('用户名已经存在,请重新输入！').show();

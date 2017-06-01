@@ -5,12 +5,62 @@ from models import *
 from django.http import JsonResponse
 
 
+
 def index(request):
     return render(request, 'Users/index.html')
 
 
 def login(request):
-    return render(request, 'Users/login.html')
+    context = {'uname_err_code':0, 'pwd_err_code':0}
+    return render(request, 'Users/login.html', context)
+
+def login_handle(request):
+    from hashlib import sha1
+    flage = True
+    context = {}
+
+    if request.method == 'POST':
+        dict = request.POST
+        user_name = dict.get('username','')
+        pwd = dict.get('pwd')
+        # 加密
+        sha1 = sha1()
+        sha1.update(pwd)
+        pwd = sha1.hexdigest()
+
+        # 检查用户名输入是否正确
+        uname_err_code = check_user_for_login(user_name)
+        if uname_err_code > 0:
+            flage = False
+            context['uname_err_code'] = uname_err_code
+            context['uname'] = user_name
+        else:
+            context['uname_err_code'] = 0  # 正确返回0
+
+        # 检查密码是否正确
+        if user_name:
+            if uname_err_code == 0:
+                user = Users.objects.filter(uname=user_name)
+                pword = user[0].pword
+                if pword != pwd:
+                    flage = False
+                    context['pwd_err_code'] = 1
+                else:
+                    context['pwd_err_code'] = 0
+            else:
+                context['uname_err_code'] = 3
+                context['pwd_err_code'] = 0
+        else:
+            context['uname_err_code'] = 1
+            context['pwd_err_code'] = 0
+
+        # 如果登陆成功跳转到首页，　否则返回错误信息
+        if flage:
+            return redirect('/')
+        else:
+            return render(request, 'Users/login.html', context)
+
+
 
 # 渲染register页面
 def register(request):
@@ -79,9 +129,23 @@ def check_user_name(user_name):
         # "用户名长度必须大于5且小于20！"
         return 2
 
-    user_name = Users.objects.filter(uname=user_name).count()
-    if user_name >= 1:
+    count = Users.objects.filter(uname=user_name).count()
+    if count >= 1:
         # "用户名已经存在,请重新输入！"
         return 3
+    else:
+        return 0
+
+def check_user_for_login(user_name):
+    if user_name == "":
+        # "用户名不能为空！"
+        return 1
+    elif len(user_name) < 5 or len(user_name) > 20:
+        # "用户名长度必须大于5且小于20！"
+        return 2
+
+    count = Users.objects.filter(uname=user_name).count()
+    if count == 0:
+        return 3   # 用户不存在
     else:
         return 0
