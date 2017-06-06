@@ -2,8 +2,14 @@
 	<head></head>
 	<body>
 		<h1>test</h1>
+		<ul>
+			{% for user in users%}
+				<li>{{user.uname}} -- {{user.email}}</li>
+			{% endfor %}
+		</ul>
 
-		{{cookie_uname}}<br />
-		{{session_uname}}
+		{{value|add:'2'}}
+
+		{{list1|add:list2}}
 	</body>
 </html>

@@ -10,7 +10,7 @@
   		current_path = window.location.pathname;
 
   		$('.left_menu_con a').each(function(){
-  			$(this).removeAttr('class');  		
+  			$(this).removeAttr('class');
   		});
 
   		if(current_path == '/user/user_center_site/')
@@ -28,7 +28,12 @@
   		else
   		{
   			$('.left_menu_con a').eq(1).prop('class','active');
-  		}
+  		};
+
+        // 计算购物车中的商品数量
+        $.get('/cart/cart_count/', function(data){
+            $('.goods_count').html(data.count);
+        });
   	})
   </script>
 {% endblock js%}
@@ -55,39 +60,33 @@
 					<span>|</span>
 					<a href="/user/user_center_info/">用户中心</a>
 					<span>|</span>
-					<a href="cart.html">我的购物车</a>
+					<a href="/cart/display/">我的购物车</a>
 					<span>|</span>
 					<a href="user_center_order.html">我的订单</a>
 				</div>
 			</div>
-		</div>		
+		</div>
 	</div>
 {% endblock head%}
 
 {% block search%}
 	<div class="search_bar clearfix">
-		<a href="index.html" class="logo fl"><img src="/static/images/logo.png"></a>
-		<div class="sub_page_name fl">|&nbsp;&nbsp;&nbsp;&nbsp;用户中心</div>
-		<div class="search_con fr">
-			<input type="text" class="input_text fl" name="" placeholder="搜索商品">
-			<input type="button" class="input_btn fr" name="" value="搜索">
-		</div>		
+		<a href="/goods/index/" class="logo fl"><img src="/static/images/logo.png"></a>
+		{% if page_num == 1 %}
+            <div class="sub_page_name fl">|&nbsp;&nbsp;&nbsp;&nbsp;{{ title }}</div>
+            <div class="search_con fr">
+                <input type="text" class="input_text fl" name="" placeholder="搜索商品">
+                <input type="button" class="input_btn fr" name="" value="搜索">
+            </div>
+        {% else %}
+            <div class="search_con fl">
+                <input type="text" class="input_text fl" name="" placeholder="搜索商品">
+                <input type="button" class="input_btn fr" name="" value="搜索">
+            </div>
+            <div class="guest_cart fr">
+                <a href="/cart/display/" class="cart_name fl">我的购物车</a>
+                <div class="goods_count fl" id="show_count">0</div>
+            </div>
+        {% endif %}
 	</div>
 {% endblock search%}
-
-{% block silder%}
-<div class="main_con clearfix">
-			<div class="left_menu_con clearfix">
-				<h3>用户中心</h3>
-				<ul>
-					<li><a href="/user/user_center_info/" class="active">· 个人信息</a></li>
-					<li><a href="user_center_order.html">· 全部订单</a></li>
-					<li><a href="/user/user_center_site/">· 收货地址</a></li>
-				</ul>
-			</div>
-
-			{% block content %}
-
-			{% endblock content%}
-</div>
-{% endblock silder%}

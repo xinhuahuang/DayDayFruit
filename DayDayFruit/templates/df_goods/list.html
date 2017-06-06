@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block detail %}
+    <div class="navbar_con">
+		<div class="navbar clearfix">
+			<div class="subnav_con fl">
+				<h1>全部商品分类</h1>
+				<span></span>
+				<ul class="subnav">
+					<li><a href="/goods/list1/1/" class="fruit">新鲜水果</a></li>
+					<li><a href="/goods/list2/1/" class="seafood">海鲜水产</a></li>
+					<li><a href="/goods/list3/1/" class="meet">猪牛羊肉</a></li>
+					<li><a href="/goods/list4/1/" class="egg">禽类蛋品</a></li>
+					<li><a href="/goods/list5/1/" class="vegetables">新鲜蔬菜</a></li>
+					<li><a href="/goods/list6/1/" class="ice">速冻食品</a></li>
+				</ul>
+			</div>
+			<ul class="navlist fl">
+				<li><a href="/goods/index/">首页</a></li>
+				<li class="interval">|</li>
+				<li><a href="">手机生鲜</a></li>
+				<li class="interval">|</li>
+				<li><a href="">抽奖</a></li>
+			</ul>
+		</div>
+	</div>
+
+	<div class="breadcrumb">
+		<a href="#">全部分类</a>
+		<span>></span>
+        {% if flag == 'true' %}
+		    <a href="#">{{ type_info.ttitle }}</a>
+        {% else %}
+            {{ type_info }}
+        {% endif %}
+	</div>
+
+	<div class="main_wrap clearfix">
+		<div class="l_wrap fl clearfix">
+			<div class="new_goods">
+				<h3>新品推荐</h3>
+                {% if flag == 'true' %}
+				<ul>
+                    {% for good in new_goods %}
+                        <li>
+                            <a href="/goods/detail{{ good.gtype_id }}/{{ good.id }}/"><img src="/static/{{ good.gpic }}"></a>
+                            <h4><a href="/goods/detail{{ good.gtype_id }}/{{ good.id }}/">{{ good.gtitle }}</a></h4>
+                            <div class="prize">￥{{ good.gprice }}</div>
+                        </li>
+                    {% endfor %}
+				</ul>
+                {% else %}
+                    没有找到相应的推荐
+                {% endif %}
+			</div>
+		</div>
+
+		<div class="r_wrap fr clearfix">
+			<div class="sort_bar">
+                {% if sid == 0 %}
+				    <a href="/goods/list{{ tid }}/" class="active">默认</a>
+                    <a href="/goods/list{{ tid }}/1/1">价格</a>
+                    <a href="/goods/list{{ tid }}/1/2">人气</a>
+                {% elif sid == 1 %}
+				    <a href="/goods/list{{ tid }}/">默认</a>
+                    <a href="/goods/list{{ tid }}/1/1" class="active">价格</a>
+                    <a href="/goods/list{{ tid }}/1/2">人气</a>
+                {% else %}
+				     <a href="/goods/list{{ tid }}/">默认</a>
+                    <a href="/goods/list{{ tid }}/1/1">价格</a>
+                    <a href="/goods/list{{ tid }}/1/2" class="active">人气</a>
+                {% endif %}
+			</div>
+
+			<ul class="goods_type_list clearfix">
+            {% if flag == 'true' %}
+                {% for good in good_info_2 %}
+                    <li>
+                        <a href="/goods/detail{{ good.gtype_id }}/{{ good.id }}/"><img src="/static/{{ good.gpic }}"></a>
+                        <h4><a href="/goods/detail{{ good.gtype_id }}/{{ good.id }}/">{{ good.gtitle }}</a></h4>
+                        <div class="operate">
+                            <span class="prize">￥{{ good.gprice }}</span>
+                            <span class="unit">{{ good.gprice }}/{{ good.gunit }}</span>
+                            <a href="/cart/add{{ good.id }}/1" class="add_goods" title="加入购物车"></a>
+                        </div>
+                    </li>
+                {% endfor %}
+            {% else %}
+                {{ good_info|safe }}
+            {% endif %}
+			</ul>
+
+        {% if flag == 'true' %}
+			<div class="pagenation">
+                {% if good_info_2.has_previous %}
+                    <a href="/goods/list{{ tid }}/{{ good_info_2.number|add:-1 }}"><上一页</a>
+                {% endif %}
+
+                {% for pindex in p_list %}
+                    {% if pindex == p_index %}
+                        <a href="/goods/list{{ tid }}/{{ pindex }}" class="active">{{ pindex }}</a>
+                    {% else %}
+                        <a href="/goods/list{{ tid }}/{{ pindex }}">{{ pindex }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if good_info_2.has_next %}
+                    <a href="/goods/list{{ tid }}/{{ good_info_2.number|add:+1 }}">下一页></a>
+                {% endif %}
+			</div>
+        {% endif %}
+		</div>
+	</div>
+
+{% endblock detail %}

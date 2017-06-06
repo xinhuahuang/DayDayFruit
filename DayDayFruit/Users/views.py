@@ -1,4 +1,4 @@
-#coding:utf-8
+# coding:utf-8
 
 from django.shortcuts import render, redirect
 from models import *
@@ -7,25 +7,19 @@ from . import user_decorator
 
 
 def index(request):
-    cookie_uname = ''
-    session_uname = request.session.get('user_name', '')
-
-    if request.COOKIES.has_key('uname'):
-        cookie_uname = request.COOKIES['uname']
-
-    context = {'cookie_uname':cookie_uname, 'session_uname':session_uname}
-    return render(request, 'Users/index.html', context)
-    #return HttpResponse('test hello')
+    return redirect('/goods/index/')
 
 
 def login(request):
-    context = {'uname_err_code':0, 'pwd_err_code':0}
+    context = {'uname_err_code': 0, 'pwd_err_code': 0}
     return render(request, 'Users/login.html', context)
+
 
 # 注销用户
 def logout(request):
     request.session.flush()
     return redirect('/user/login/')
+
 
 def login_handle(request):
     from hashlib import sha1
@@ -35,7 +29,7 @@ def login_handle(request):
 
     if request.method == 'POST':
         dict = request.POST
-        user_name = dict.get('username','')
+        user_name = dict.get('username', '')
         pwd = dict.get('pwd')
         # 加密
         sha1 = sha1()
@@ -74,7 +68,7 @@ def login_handle(request):
             url = request.COOKIES.get('url', '/user/')
             red = HttpResponseRedirect(url)
             # 成功后删除转向地址，防止以后直接登录造成的转向
-            red.set_cookie('url','',max_age=-1)
+            red.set_cookie('url', '', max_age=-1)
 
             if rember_me:
                 red.set_cookie('uname', user_name)
@@ -84,22 +78,23 @@ def login_handle(request):
             request.session['user_id'] = user[0].id
             request.session['user_name'] = user_name
             return red
-            #return redirect('/user/')
+            # return redirect('/user/')
         else:
             return render(request, 'Users/login.html', context)
 
 
-
 # 渲染register页面
 def register(request):
-    context = {'uname_err_code':0, 'pwd_err_code':0}
+    context = {'uname_err_code': 0, 'pwd_err_code': 0}
     return render(request, 'Users/register.html', context)
+
 
 # 检查用户是否存在，存在返回大于０
 def user_exit(request):
     user_name = request.GET.get('user_name')
     count = Users.objects.filter(uname=user_name).count()
-    return JsonResponse({'count':count})
+    return JsonResponse({'count': count})
+
 
 # 用户注册
 def register_handle(request):
@@ -129,7 +124,7 @@ def register_handle(request):
             context['pwd_err_code'] = 1  # 错误返回１
         else:
             context['pwd_err_code'] = 0  # 正确返回0
-        
+
         # 如果用户名和密码都正确，则提交到数据库
         if flage:
             user = Users()
@@ -164,6 +159,7 @@ def check_user_name(user_name):
     else:
         return 0
 
+
 def check_user_for_login(user_name):
     if user_name == "":
         # "用户名不能为空！"
@@ -174,7 +170,7 @@ def check_user_for_login(user_name):
 
     count = Users.objects.filter(uname=user_name).count()
     if count == 0:
-        return 3   # 用户不存在
+        return 3  # 用户不存在
     else:
         return 0
 
@@ -192,7 +188,14 @@ def user_center_info(request):
             uname = user[0].uname
             phone = user[0].phone
             address = user[0].address
-    context = {'uname':uname, 'phone':phone, 'address':address}
+
+        goods = VisitInfo.objects.filter(vusers_id=uid).order_by('-vclick')
+        if goods.count <= 5:
+            goods_list = goods
+        else:
+            goods_list = goods[0:5]
+    context = {'uname': uname, 'phone': phone, 'address': address, 'page_num': 1, 'goods_list': goods_list,
+               'title': '用户中心'}
     return render(request, 'Users/user_center_info.html', context)
 
 
@@ -211,8 +214,10 @@ def user_center_site(request):
             address = user[0].address
             contact = user[0].contact
             postcode = user[0].postcode
-    context = {'contact':contact, 'phone':phone, 'address':address, 'postcode':postcode}
+    context = {'contact': contact, 'phone': phone, 'address': address, 'postcode': postcode, 'page_num': 1,
+               'title': '用户中心'}
     return render(request, 'Users/user_center_site.html', context)
+
 
 @user_decorator.login
 def user_center_site_handle(request):
@@ -223,10 +228,10 @@ def user_center_site_handle(request):
     postcode = ''
 
     if request.method == 'POST':
-        contact = request.POST.get('contact','')
-        address = request.POST.get('address','')
-        postcode = request.POST.get('postcode','')
-        phone = request.POST.get('phone','')
+        contact = request.POST.get('contact', '')
+        address = request.POST.get('address', '')
+        postcode = request.POST.get('postcode', '')
+        phone = request.POST.get('phone', '')
 
         if uid:
             user = Users.objects.get(id=uid)
@@ -236,5 +241,5 @@ def user_center_site_handle(request):
             user.phone = phone
             user.save()
 
-    context = {'contact':contact, 'phone':phone, 'address':address, 'postcode':postcode}
+    context = {'contact': contact, 'phone': phone, 'address': address, 'postcode': postcode, 'page_num': 1}
     return render(request, 'Users/user_center_site.html', context)
