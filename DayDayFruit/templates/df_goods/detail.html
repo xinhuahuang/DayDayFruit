@@ -176,7 +176,8 @@
 				'top': $to_x+7},
 				"fast", function() {
 					$(".add_jump").fadeOut('fast',function(){
-                        $.get('/cart/add'+{{ good_detail.id }}+'/'+count+'/', function(data){
+					    var num = parseInt($('.num_show').val());
+                        $.get('/cart/add/',{'gid':{{ good_detail.id }}, 'num': num}, function(data){
                             $('#show_count').html(data.count);
                         });
 					});

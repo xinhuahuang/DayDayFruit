@@ -4,17 +4,25 @@
     <script type="text/javascript">
         // 数量加
         function add(gid){
-            $.get('/cart/modify_num'+gid+'/1/', function(data){
-                $('#'+gid).val(data.count);
-                calc_price();
-                calc_total();
-            });
+            var kucun = parseInt($('#'+gid).parents('.cart_list_td').children('.col03').find('em').html());
+            var g_count = parseInt($('#'+gid).val());
+
+            // 如果+1后的值小于库存的话，则进行+1操作
+            if((g_count+1) < kucun) {
+                $.get('/cart/modify_num/', {'gid': gid, 'num': 1} , function (data) {
+                    $('#' + gid).val(data.count);
+                    $('#'+gid).parents('.cart_list_td').children('.col03').find('em').html(data.kucun);
+                    calc_price();
+                    calc_total();
+                });
+            }
         };
 
         // 数量减
         function sub(gid){
-            $.get('/cart/modify_num'+gid+'/-1/', function(data){
+            $.get('/cart/modify_num/', {'gid': gid, 'num': -1} , function(data){
                 $('#'+gid).val(data.count);
+                $('#'+gid).parents('.cart_list_td').children('.col03').find('em').html(data.kucun);
                 calc_price();
                 calc_total();
             });
@@ -22,16 +30,21 @@
 
         //　删除购物车
         function del(gid){
-            $.get('/cart/delete_cart/'+gid+'/', function(data){
-                if(data.flag) {
-                    $('#'+gid).parents('.cart_list_td').remove();
-                    getCount();
-                    calc_total();
-                }
-                else{
-                    alert('删除数据失败');
-                }
-            })
+            // 获取要归还的库存
+            var old_count = $('#'+gid).val();
+
+            if(confirm('确认要删除吗？')) {
+                $.get('/cart/delete_cart/' + gid + '/' + old_count +'/', function (data) {
+                    if (data.flag) {
+                        $('#' + gid).parents('.cart_list_td').remove();
+                        getCount();
+                        calc_total();
+                    }
+                    else {
+                        alert('删除数据失败');
+                    }
+                })
+            }
         };
 
         // 获取购物车中商品的件数
@@ -80,19 +93,23 @@
             // 手动修改购物框中的值
            $('.num_show').each(function(){
                var gid = $(this).attr('id');
-               var old_count = $('#'+gid).val();
+               var old_count = parseInt($('#'+gid).val());
+
+               // 获取页面中显示的库存
+               var kucun = parseInt($('#'+gid).parents('.cart_list_td').children('.col03').find('em').html());
 
                $(this).blur(function(){
-                   var count = parseInt($(this).val());
+                   var new_count = parseInt($(this).val());
                    // 判断输入的值是否合法
                    var re_test = /\d{1,2}/;
-                   if(re_test.test(count)==false){
+                   if(re_test.test(new_count)==false){
                        $('#'+gid).val(old_count);
                    }
                    else{
-                       if(count) {
-                           $.get('/cart/modify' + gid + '/' + parseInt(count) + '/', function (data) {
+                       if(new_count < kucun && (old_count+1) < kucun) {
+                           $.get('/cart/modify/', {'gid': gid, 'old_count': old_count, 'new_count': new_count} ,function (data) {
                                $('#' + gid).val(data.count);
+                               $('#'+gid).parents('.cart_list_td').children('.col03').find('em').html(data.kucun);
                            });
                        }
                        else{
@@ -179,7 +196,7 @@
             <li class="col05"><em>{{ cart.good.gprice }}</em>元</li>
             <li class="col06">
                 <div class="num_add">
-                    <a href="javascript:add({{ cart.good_id }});" class="add fl"">+</a>
+                    <a href="javascript:add({{ cart.good_id }});" class="add fl">+</a>
                     <input type="text" class="num_show fl" value="{{ cart.count }}" id={{ cart.good_id }}>
                     <a href="javascript:sub({{ cart.good_id }});" class="minus fl">-</a>
                 </div>
