@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect
 from models import *
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from . import user_decorator
+from df_order.models import *
 
 
 def index(request):
@@ -243,3 +244,11 @@ def user_center_site_handle(request):
 
     context = {'contact': contact, 'phone': phone, 'address': address, 'postcode': postcode, 'page_num': 1}
     return render(request, 'Users/user_center_site.html', context)
+
+@user_decorator.login
+def user_center_order(request):
+    user_id = request.session.get('user_id')
+    orders = OrderInfo.objects.filter(user_id=user_id)
+
+    context = {'title': '用户中心', 'page_num': 1, 'orders': orders}
+    return render(request, 'Users/user_center_order.html', context)

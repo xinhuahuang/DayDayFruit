@@ -23,9 +23,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '=2tki5)fsmzh5k0n$^i5^h%itinfla**(x3*is&7i&m-bfp$ih'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*',]
 
 
 # Application definition
@@ -41,6 +41,7 @@ INSTALLED_APPS = (
     'df_goods',
     'tinymce',
     'cart',
+    'df_order',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -107,12 +108,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
+STATIC_ROOT = '/home/python/Documents/DayDayFruit/DayDayFruit/static/'
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
-MEDIA_ROOT=os.path.join(BASE_DIR,"static/goods")
+MEDIA_ROOT = os.path.join(BASE_DIR, "static/goods")
 
 TINYMCE_DEFAULT_CONFIG = {
     'theme': 'advanced',

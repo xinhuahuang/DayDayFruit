@@ -5,6 +5,7 @@ from django.http import HttpResponse, JsonResponse
 from models import *
 from Users import user_decorator
 from df_goods.models import *
+from Users.models import *
 
 
 # Create your views here.
@@ -31,10 +32,6 @@ def add(request):
     if cart.count() and num < kucun:
         cart_add = cart[0]
         cart_add.count += num
-
-        # 更新库存
-        num = kucun - num
-        good.update(gkucun=num)
     elif cart.count() < 1:
         cart_add = CartInfo()
         cart_add.count = num
@@ -42,16 +39,11 @@ def add(request):
         cart_add.good_id = gid
         cart_add.is_buy = 0
 
-        # 更新库存
-        num = kucun - num
-        good.update(gkucun=num)
-
     cart_add.save()
-    good[0].save()
 
     if request.is_ajax():
         cart = CartInfo.objects.filter(is_buy=0).filter(user_id=int(user_id))
-        return JsonResponse({'count': cart.count(), 'kucun': good[0].gkucun})
+        return JsonResponse({'count': cart.count()})
     else:
         return redirect('/cart/display/')
 
@@ -77,23 +69,19 @@ def modify_num(request):
         return JsonResponse({'count': 0})
     else:
         cart = CartInfo.objects.filter(user_id=user_id).filter(good_id=gid)
-        good = GoodsInfo.objects.filter(id=gid)
-        kucun = good[0].gkucun
         int_count = cart[0].count
 
         # 更新数据库中的值
         if num < 0 and int_count > 1:
             int_count -= 1
             cart.update(count=int_count)
-            good.update(gkucun=kucun+1)
         elif num > 0:
             int_count += 1
             cart.update(count=int_count)
-            good.update(gkucun=kucun-1)
 
     # 将更新后的数据返回出来
     cart = CartInfo.objects.filter(user_id=user_id).filter(good_id=gid)
-    return JsonResponse({'count': cart[0].count, 'kucun': good[0].gkucun})
+    return JsonResponse({'count': cart[0].count})
 
 
 # 手动更新购物车的数量
@@ -113,11 +101,11 @@ def modify(request):
         # 更新数据库中的值
         if new_count >= 1 and kucun+old_count-new_count >= 1:
             cart.update(count=new_count)
-            good.update(gkucun=kucun+old_count-new_count)
+            # good.update(gkucun=kucun+old_count-new_count)
 
     # 将更新后的数据返回出来
     cart = CartInfo.objects.filter(user_id=user_id).filter(good_id=gid)
-    return JsonResponse({'count': cart[0].count, 'kucun': good[0].gkucun})
+    return JsonResponse({'count': cart[0].count})
 
 
 def delete_cart(request, gid, count):
@@ -126,15 +114,15 @@ def delete_cart(request, gid, count):
     """
     user_id = int(request.session.get('user_id'))
     gid = int(gid)
-    num = int(count)
+    # num = int(count)
 
     try:
         cart = CartInfo.objects.filter(user_id=user_id).filter(good_id=gid)
         good = GoodsInfo.objects.filter(id=gid)
-        kucun = good[0].gkucun
+        # kucun = good[0].gkucun
         if cart.count():
             cart.delete()
-            good.update(gkucun=kucun+num)
+            # good.update(gkucun=kucun+num)
             flag = True
         else:
             flag = False
@@ -143,3 +131,19 @@ def delete_cart(request, gid, count):
         flag = False
     finally:
         return JsonResponse({'flag': flag})
+
+
+def place_order(request):
+    """
+    展示订单确认页
+    :param request:
+    :return:
+    """
+    user_id = request.session.get('user_id')
+    good_id = request.GET.getlist('good_id')
+
+    goods = CartInfo.objects.filter(user_id=user_id).filter(good_id__in=good_id)
+    user = Users.objects.filter(id=user_id)
+
+    context = {'goods': goods, 'page_num': 1, 'user': user[0], 'title':'提交订单'}
+    return render(request, 'df_cart/place_order.html/', context)

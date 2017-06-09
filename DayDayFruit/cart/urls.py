@@ -1,4 +1,4 @@
-from django.conf.urls import include, url
+from django.conf.urls import url
 import views
 
 urlpatterns = [
@@ -9,5 +9,5 @@ urlpatterns = [
     url(r'^modify/$', views.modify),
     url(r'^delete_cart/(\d+)/(\d+)/$', views.delete_cart),
     url(r'^cart_count/$', views.cart_count),
-
+    url(r'^place_order/$', views.place_order),
 ]

@@ -11,7 +11,7 @@
             if((g_count+1) < kucun) {
                 $.get('/cart/modify_num/', {'gid': gid, 'num': 1} , function (data) {
                     $('#' + gid).val(data.count);
-                    $('#'+gid).parents('.cart_list_td').children('.col03').find('em').html(data.kucun);
+                    // $('#'+gid).parents('.cart_list_td').children('.col03').find('em').html(data.kucun);
                     calc_price();
                     calc_total();
                 });
@@ -22,7 +22,7 @@
         function sub(gid){
             $.get('/cart/modify_num/', {'gid': gid, 'num': -1} , function(data){
                 $('#'+gid).val(data.count);
-                $('#'+gid).parents('.cart_list_td').children('.col03').find('em').html(data.kucun);
+                // $('#'+gid).parents('.cart_list_td').children('.col03').find('em').html(data.kucun);
                 calc_price();
                 calc_total();
             });
@@ -109,7 +109,7 @@
                        if(new_count < kucun && (old_count+1) < kucun) {
                            $.get('/cart/modify/', {'gid': gid, 'old_count': old_count, 'new_count': new_count} ,function (data) {
                                $('#' + gid).val(data.count);
-                               $('#'+gid).parents('.cart_list_td').children('.col03').find('em').html(data.kucun);
+                               //$('#'+gid).parents('.cart_list_td').children('.col03').find('em').html(data.kucun);
                            });
                        }
                        else{
@@ -171,7 +171,26 @@
                 }
 
                 calc_total();
-            })
+            });
+
+            // 提交数据到结算页
+            $('#GoTotal').click(function(){
+                var good_list = "/cart/place_order/?";
+
+                // 将要处理的id写入cart_list，做为参数传递
+                $('.cart_list_td').each(function(){
+                    var checkin = $(this).children('.col01').find('input');
+                    var cart = $(this).children('.col06').find('.num_show');
+
+                    if(checkin.prop('checked')){
+                       good_list += "good_id=" + cart.attr('id') + "&";
+                    }
+                });
+
+                // 构造url地址，用于视图去接收参数
+                good_list = good_list.substring(0, good_list.length-1);
+                window.location.href=good_list;
+            });
         });
     </script>
 {% endblock js %}
@@ -187,31 +206,33 @@
 		<li class="col06">操作</li>
 	</ul>
 
-    {% for cart in cart_list reversed %}
-        <ul class="cart_list_td clearfix">
-            <li class="col01"><input type="checkbox" name="items" checked></li>
-            <li class="col02"><img src="/static/{{ cart.good.gpic }}"></li>
-            <li class="col03">{{ cart.good.gtitle }}<br>库存：<em>{{ cart.good.gkucun }}</em></li>
-            <li class="col04">{{ cart.good.gunit }}</li>
-            <li class="col05"><em>{{ cart.good.gprice }}</em>元</li>
-            <li class="col06">
-                <div class="num_add">
-                    <a href="javascript:add({{ cart.good_id }});" class="add fl">+</a>
-                    <input type="text" class="num_show fl" value="{{ cart.count }}" id={{ cart.good_id }}>
-                    <a href="javascript:sub({{ cart.good_id }});" class="minus fl">-</a>
-                </div>
-            </li>
-            <li class="col07"><em></em>元</li>
-            <li class="col08"><a href="javascript:del({{ cart.good_id }});">删除</a></li>
-	    </ul>
-    {% endfor %}
+        {% for cart in cart_list reversed %}
+            <ul class="cart_list_td clearfix">
+                <li class="col01"><input type="checkbox" name="items" checked></li>
+                <li class="col02"><img src="/static/{{ cart.good.gpic }}"></li>
+                <li class="col03">{{ cart.good.gtitle }}<br>库存：<em>{{ cart.good.gkucun }}</em></li>
+                <li class="col04">{{ cart.good.gunit }}</li>
+                <li class="col05"><em>{{ cart.good.gprice }}</em>元</li>
+                <li class="col06">
+                    <div class="num_add">
+                        <a href="javascript:add({{ cart.good_id }});" class="add fl">+</a>
+                        <input type="text" class="num_show fl" value="{{ cart.count }}" id={{ cart.good_id }}>
+                        <a href="javascript:sub({{ cart.good_id }});" class="minus fl">-</a>
+                    </div>
+                </li>
+                <li class="col07"><em></em>元</li>
+                <li class="col08"><a href="javascript:del({{ cart.good_id }});">删除</a></li>
+            </ul>
+        {% endfor %}
+
 
 
 	<ul class="settlements">
 		<li class="col01"><input type="checkbox" id="CheckAll" checked=""></li>
 		<li class="col02">全选</li>
 		<li class="col03">合计(不含运费)：<span>¥</span><em></em><br>共计<b>{{ count|default:0 }}</b>件商品</li>
-		<li class="col04"><a href="place_order.html">去结算</a></li>
+		<li class="col04"><input type="button" value="去结算" id="GoTotal"/></li>
 	</ul>
+
 
 {% endblock detail %}
