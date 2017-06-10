@@ -99,3 +99,10 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# not update file
+settings.py
+uswgi.log
+uwsgi.ini
+uwsgi.pid
+wsgi.py
